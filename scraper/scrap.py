@@ -39,8 +39,8 @@ class scrap_WorldBank:
         default : the latest year
         """
         selector = self.driver.find_elements_by_xpath('.//*[@name="ctl17$ddl_page_WDI_Time"]/option')
-        print(f"Selected year : {selector[-1].get_attribute('innerHTML')}")
-        selector[-1].click()
+        print(f"Selected year : {selector[-3].get_attribute('innerHTML')}")
+        selector[-3].click()
 
 
     def get_table_header(self,driver):
@@ -92,7 +92,7 @@ class scrap_WorldBank:
 
         print(f"Header size : {len(header)}\nColumns : {len(data[0])}")
         df = pd.DataFrame(data, columns=header)
-        df.to_csv(index=False,path_or_buf='data.csv')
+        df.to_csv(index=False,path_or_buf='ADA_data_2018.csv')
 
 
 
