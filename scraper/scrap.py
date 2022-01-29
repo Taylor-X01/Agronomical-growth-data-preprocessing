@@ -11,6 +11,7 @@ driver = webdriver.Chrome(
     executable_path="C:\\chromedriver\\chromedriver97.exe")
 driver.get(Url)
 
+
 class scrap_WorldBank:
 
     def __init__(self,driver=driver,url=Url):
@@ -32,6 +33,15 @@ class scrap_WorldBank:
         for i in range(len(layout)):
             layout[i].click()
 
+    def select_year(self):
+        """
+        Get the data from a specific year
+        default : the latest year
+        """
+        selector = self.driver.find_elements_by_xpath('.//*[@name="ctl17$ddl_page_WDI_Time"]/option')
+        print(f"Selected year : {selector[-1].get_attribute('innerHTML')}")
+        selector[-1].click()
+
 
     def get_table_header(self,driver):
         """
@@ -44,8 +54,16 @@ class scrap_WorldBank:
         for i,col in enumerate(head[1:]):
             h_text = col.find_element_by_xpath('.//table/tbody/tr/td/span[@class="grid-column-text"]')
             self.header.append(h_text.get_attribute('innerHTML'))
-        
+
         print(f"Out from the header : {self.header}")
+
+    def scroll_down_element(self, element):
+        try:
+            self.driver.execute_script("arguments[0].scrollBy(0, 1200)",element)
+            # self.driver.execute_script("window.scrollBy(0, 250)",element)
+
+        except Exception as e:
+            print('Error scrolling down web element', e)
 
 
 
@@ -55,6 +73,11 @@ class scrap_WorldBank:
         """
         self.get_table_header(driver)
         self.data = []
+
+        element = driver.find_element_by_xpath('.//*[@class="dxgvCSD"]')
+        for _ in range(10):
+            self.scroll_down_element(element)
+            time.sleep(2)
         R = driver.find_elements_by_xpath('.//*[contains(@id,"grdTableView_DXDataRow")]')
 
         for row in R:
@@ -75,6 +98,8 @@ class scrap_WorldBank:
 
 scraper = scrap_WorldBank(driver=driver,url=Url)
 scraper._setup_layout(driver)
-time.sleep(10)
+time.sleep(15)
+scraper.select_year()
+time.sleep(15)
 scraper.get_table_content(driver)
 scraper.convert2csv()
