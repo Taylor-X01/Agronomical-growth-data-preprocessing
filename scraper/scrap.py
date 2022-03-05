@@ -1,10 +1,12 @@
 import os
 import sys
+from traceback import print_tb
 import pandas as pd
 import time
 from selenium import webdriver
 
-Url = "https://databank.banquemondiale.org/reports.aspx?source=2&Topic=1"
+# Url = "https://databank.banquemondiale.org/reports.aspx?source=2&Topic=1"
+Url = "https://databank.worldbank.org/reports.aspx?source=2&series=ST.INT.TRNX.CD"
 opts = webdriver.ChromeOptions()
 opts.headless = False
 driver = webdriver.Chrome(
@@ -41,6 +43,32 @@ class scrap_WorldBank:
         selector = self.driver.find_elements_by_xpath('.//*[@name="ctl17$ddl_page_WDI_Time"]/option')
         print(f"Selected year : {selector[-3].get_attribute('innerHTML')}")
         selector[-3].click()
+
+    def search_series(self):
+        """
+        Search tourism series
+        """
+        self.driver.find_element_by_xpath('.//*[@id="panel_WDI_Series"]/div[1]/h4[1]/a[1]').click()
+        searchText = self.driver.find_element_by_xpath('.//*[@id="searchBox_WDI_Series"]')
+        print(f"search text : {searchText}\nSelected series : {searchText.get_attribute('innerHTML')}")
+        time.sleep(5)
+        searchText.send_keys("tourism")
+        # searchText.submit()
+        time.sleep(5)
+        searchBtn = self.driver.find_element_by_xpath('.//*[@id="searchBtn_WDI_Series"]/span')
+        searchBtn.click()
+
+        tickAll = self.driver.find_element_by_xpath('.//*[@id="newSelection_WDI_Series"]/div[1]/div[1]/div[1]/div[1]/div[1]/div[3]/div[1]/div[1]/div[1]/a[1]/span[1]')
+        tickAll.click()
+
+        searchText.clear()
+        searchText.send_keys("gdp")
+        searchBtn = self.driver.find_element_by_xpath('.//*[@id="searchBtn_WDI_Series"]/span')
+        searchBtn.click()
+        self.driver.find_element_by_xpath('.//*[@id="chk[WDI_Series].[Topic].&[NY.GDP.MKTP.CD]"]').click()
+        self.driver.find_element_by_xpath('.//*[@id="chk[WDI_Series].[Topic].&[NE.EXP.GNFS.ZS]"]').click()
+
+
 
 
     def get_table_header(self,driver):
@@ -92,11 +120,18 @@ class scrap_WorldBank:
 
         print(f"Header size : {len(header)}\nColumns : {len(data[0])}")
         df = pd.DataFrame(data, columns=header)
-        df.to_csv(index=False,path_or_buf='ADA_data_2018.csv')
+        # df.to_csv(index=False,path_or_buf='ADA_data_2018.csv')
+        df.to_csv(index=False,path_or_buf='Tourism_data_2018.csv')
+
 
 
 
 scraper = scrap_WorldBank(driver=driver,url=Url)
+
+
+scraper.search_series()
+time.sleep(15)
+
 scraper._setup_layout(driver)
 time.sleep(15)
 scraper.select_year()
